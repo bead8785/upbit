@@ -5,6 +5,35 @@ import datetime
 access = "access"
 secret = "secret"
 
+# 로그인
+upbit = pyupbit.Upbit(access, secret)
+print("오늘은 뭐가 좋을까?")
+
+# 보유한 코인과 수량 출력
+print("내 보유코인:")
+for balance in upbit.get_balances():
+    if float(balance["balance"]) > 0:
+        print(f"{balance['currency']}: {balance['balance']}")
+
+# 매도할 코인 리스트
+coin_list = [
+    {"ticker": "KRW-BTC", "name": "비트코인"},
+    {"ticker": "KRW-BCH", "name": "비트코인 캐시"},
+    {"ticker": "KRW-BSV", "name": "비트코인 에스브이"},
+    {"ticker": "KRW-ETH", "name": "이더리움"},
+    {"ticker": "KRW-ETC", "name": "이더리움클래식"},
+    {"ticker": "KRW-BTT", "name": "비트토렌트"},
+    {"ticker": "KRW-SOL", "name": "솔라나"},
+    {"ticker": "KRW-XLM", "name": "스텔라루멘"},
+    {"ticker": "KRW-XRP", "name": "리플"},
+    {"ticker": "KRW-LINK", "name": "체인링크"},
+    {"ticker": "KRW-LOOM", "name": "룸네트워크"},
+    {"ticker": "KRW-EOS", "name": "이오스"},
+    {"ticker": "KRW-ADA", "name": "에이다"},
+    {"ticker": "KRW-DOT", "name": "폴카닷"},
+    {"ticker": "KRW-DOGE", "name": "도지코인"},
+]
+
 def get_target_price(ticker, k):
     """변동성 돌파 전략으로 매수 목표가 조회"""
     df = pyupbit.get_ohlcv(ticker, interval="day", count=2)
@@ -37,35 +66,6 @@ def get_balance(ticker):
 def get_current_price(ticker):
     """현재가 조회"""
     return pyupbit.get_orderbook(ticker=ticker)["orderbook_units"][0]["ask_price"]
-
-# 로그인
-upbit = pyupbit.Upbit(access, secret)
-print("오늘은 뭐가 좋을까?")
-
-# 보유한 코인과 수량 출력
-print("내 보유코인:")
-for balance in upbit.get_balances():
-    if float(balance["balance"]) > 0:
-        print(f"{balance['currency']}: {balance['balance']}")
-
-# 매도할 코인 리스트
-coin_list = [
-    {"ticker": "KRW-BTC", "name": "비트코인"},
-    {"ticker": "KRW-BCH", "name": "비트코인 캐시"},
-    {"ticker": "KRW-BSV", "name": "비트코인 에스브이"},
-    {"ticker": "KRW-ETH", "name": "이더리움"},
-    {"ticker": "KRW-ETC", "name": "이더리움클래식"},
-    {"ticker": "KRW-BTT", "name": "비트토렌트"},
-    {"ticker": "KRW-SOL", "name": "솔라나"},
-    {"ticker": "KRW-XLM", "name": "스텔라루멘"},
-    {"ticker": "KRW-XRP", "name": "리플"},
-    {"ticker": "KRW-LINK", "name": "체인링크"},
-    {"ticker": "KRW-LOOM", "name": "룸네트워크"},
-    {"ticker": "KRW-EOS", "name": "이오스"},
-    {"ticker": "KRW-ADA", "name": "에이다"},
-    {"ticker": "KRW-DOT", "name": "폴카닷"},
-    {"ticker": "KRW-DOGE", "name": "도지코인"},
-]
 
 # 자동매매 시작
 while True:
