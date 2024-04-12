@@ -92,14 +92,14 @@ while True:
                         print(f"{name} ({ticker}) at {current_price} 매수")
                     else:
                         print("사고픈데 돈이없다..")
-            else:
-                btc = get_balance(balance["currency"])
-                if btc > 0.00008:
-                    ma15 = get_ma15(ticker)
-                    current_price = get_current_price(ticker)
-                    if current_price > target_price and current_price > ma15:
-                        upbit.sell_market_order(ticker, btc*0.9995)
-                        print(f"{name} ({ticker}) at {current_price} 매도")
+                else:
+                    btc = get_balance(balance["currency"])
+                    if btc > 0.00008:
+                        ma15 = get_ma15(ticker)
+                        current_price = get_current_price(ticker)
+                        if current_price > target_price and current_price > ma15:
+                            upbit.sell_market_order(ticker, btc*0.9995)
+                            print(f"{name} ({ticker}) at {current_price} 매도")
         time.sleep(1)
     except Exception as e:
         print(e)
