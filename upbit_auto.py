@@ -81,7 +81,7 @@ while True:
             end_time = start_time + datetime.timedelta(days=1)
 
             if start_time < now < end_time - datetime.timedelta(seconds=10):
-                print(f"{name} ({ticker})고민 중...")
+                print(f"{name} ({ticker})살까? 팔까? 고민 중...")
                 target_price = get_target_price(ticker, 0.5)
                 ma15 = get_ma15(ticker)
                 current_price = get_current_price(ticker)
