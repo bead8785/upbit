@@ -1,26 +1,20 @@
-import time
-import pyupbit
-import datetime
-
-access = "your-access"
-secret = "your-secret"
-
-# 관심 대상 코인 목록
-tickers = {"KRW-BTC": "비트코인",
-           "KRW-BSV": "비트코인 에스브이",
-           "KRW-ETH": "이더리움",
-           "KRW-ETC": "이더리움 클래식
-           "KRW-BTT": "비트토렌트",
-           "KRW-XRP": "리플",
-           "KRW-SOL": "솔라나",
-           "KRW-LOOM": "룸네트워크",
-           "KRW-EOS": "이오스",
-           "KRW-ADA": "에이다",
-           "KRW-DOT": "폴카닷",
-           "KRW-DOGE": "도지코인",
-           "KRW-SHIB": "시바이누",
-           "KRW-LINK": "체인링크",
-}
+coin_list = [
+    {"ticker": "BTC", "name": "비트코인"},
+    {"ticker": "BSV", "name": "비트코인 에스브이"},
+    {"ticker": "ETH", "name": "이더리움"},
+    {"ticker": "ETC", "name": "이더리움클래식"},
+    {"ticker": "BTT", "name": "비트토렌트"},
+    {"ticker": "SOL", "name": "솔라나"},
+    {"ticker": "XLM", "name": "스텔라루멘"},
+    {"ticker": "XRP", "name": "리플"},
+    {"ticker": "LINK", "name": "체인링크"},
+    {"ticker": "LOOM", "name": "룸네트워크"},
+    {"ticker": "EOS", "name": "이오스"},
+    {"ticker": "ADA", "name": "에이다"},
+    {"ticker": "DOT", "name": "폴카닷"},
+    {"ticker": "DOGE", "name": "도지코인"},
+    {"ticker": "SHIB", "name": "시바이누"},
+]
 
 def get_target_price(ticker, k):
     """변동성 돌파 전략으로 매수 목표가 조회"""
@@ -34,86 +28,71 @@ def get_start_time(ticker):
     start_time = df.index[0]
     return start_time
 
+def get_ma15(ticker):
+    """15일 이동 평균선 조회"""
+    df = pyupbit.get_ohlcv(ticker, interval="day", count=15)
+    ma15 = df['close'].rolling(15).mean().iloc[-1]
+    return ma15
+
 def get_balance(ticker):
     """잔고 조회"""
     balances = upbit.get_balances()
     for b in balances:
         if b['currency'] == ticker:
             if b['balance'] is not None:
-                return float(b['balance'])
+                return float(b['balance']), float(b['avg_buy_price'])
             else:
-                return 0
-    return 0
+                return 0, 0
+    return 0, 0
 
 def get_current_price(ticker):
     """현재가 조회"""
     return pyupbit.get_orderbook(ticker=ticker)["orderbook_units"][0]["ask_price"]
 
-def get_ma(ticker, days):
-    """이동 평균가 조회"""
-    df = pyupbit.get_ohlcv(ticker, interval="day", count=days)
-    ma = df['close'].rolling(window=days).mean().iloc[-1]
-    return ma
-
 # 로그인
 upbit = pyupbit.Upbit(access, secret)
 print("autotrade start")
-
-# 보유 코인 조회
-holding_coins = [coin['currency'] for coin in upbit.get_balances()]
 
 # 자동매매 시작
 while True:
     try:
         now = datetime.datetime.now()
-        if holding_coins:  # 보유한 코인이 있을 경우
-            for ticker in holding_coins:
-                start_time = get_start_time("KRW-"+ticker)
-                end_time = start_time + datetime.timedelta(days=1)
-
-                if start_time < now < end_time - datetime.timedelta(seconds=10):
-                    target_price = get_target_price("KRW-"+ticker, 0.5)
-                    current_price = get_current_price("KRW-"+ticker)
-                    ma_price = get_ma("KRW-"+ticker, 5)
-                    print("코인:", tickers["KRW-"+ticker])
-                    print("매수목표가:", target_price)
-                    print("현재가:", current_price)
-                    print("이동평균가:", ma_price)
-                    if target_price < current_price:
-                        krw = get_balance("KRW")
-                        if krw > 5000:
-                            upbit.buy_market_order("KRW-"+ticker, krw*0.9995)
-                            print("매수:", tickers["KRW-"+ticker])
-                else:
-                    balance = get_balance(ticker)
-                    if balance > 0.00008:
-                        upbit.sell_market_order("KRW-"+ticker, balance*0.9995)
-                        print("매도:", tickers["KRW-"+ticker])
-                time.sleep(1)
-        else:  # 보유한 코인이 없을 경우
-            for ticker in tickers.keys():
+        holding_coins = []
+        for coin in coin_list:
+            ticker = f"KRW-{coin['ticker']}"
+            balance, avg_buy_price = get_balance(coin['ticker'])
+            if balance > 0:
+                holding_coins.append(coin)
                 start_time = get_start_time(ticker)
                 end_time = start_time + datetime.timedelta(days=1)
 
                 if start_time < now < end_time - datetime.timedelta(seconds=10):
                     target_price = get_target_price(ticker, 0.5)
+                    ma15 = get_ma15(ticker)
                     current_price = get_current_price(ticker)
-                    ma_price = get_ma(ticker, 5)
-                    print("코인:", tickers[ticker])
-                    print("매수목표가:", target_price)
-                    print("현재가:", current_price)
-                    print("이동평균가:", ma_price)
-                    if target_price < current_price:
+                    print(f"{coin['name']} 보유량: {balance}, 평균매수가: {avg_buy_price}, 현재가: {current_price}, 목표가: {target_price}, 15일 이동평균가: {ma15}")
+                    if target_price < current_price and ma15 < current_price:
                         krw = get_balance("KRW")
                         if krw > 5000:
                             upbit.buy_market_order(ticker, krw*0.9995)
-                            print("매수:", tickers[ticker])
                 else:
-                    balance = get_balance(ticker.split('-')[-1])
-                    if balance > 0.00008:
+                    if ma15 > current_price:
                         upbit.sell_market_order(ticker, balance*0.9995)
-                        print("매도:", tickers[ticker])
-                time.sleep(1)
+        if len(holding_coins) == 0:
+            for coin in coin_list:
+                ticker = f"KRW-{coin['ticker']}"
+                start_time = get_start_time(ticker)
+                end_time = start_time + datetime.timedelta(days=1)
+                if start_time < now < end_time - datetime.timedelta(seconds=10):
+                    target_price = get_target_price(ticker, 0.5)
+                    ma15 = get_ma15(ticker)
+                    current_price = get_current_price(ticker)
+                    print(f"{coin['name']} 현재가: {current_price}, 목표가: {target_price}, 15일 이동평균가: {ma15}")
+                    if target_price < current_price and ma15 < current_price:
+                        krw = get_balance("KRW")
+                        if krw > 5000:
+                            upbit.buy_market_order(ticker, krw*0.9995)
+        time.sleep(1)
     except Exception as e:
         print(e)
         time.sleep(1)
