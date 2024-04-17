@@ -1,3 +1,31 @@
+import time
+import pyupbit
+import datetime
+from slack_sdk import WebClient
+import slack_sdk
+import os
+
+# Slack API 토큰
+slack_token = "Your Access Key"
+slack_client = WebClient(token=slack_token)
+
+access = "Your Access Key"
+secret = "Your Secret Key"
+
+# Slack 클라이언트 초기화
+slack_client = slack_sdk.WebClient(token=slack_token)
+
+def send_slack_message(message):
+    try:
+        # Slack으로 메시지 전송
+        response = slack_client.chat_postMessage(channel='#coin', text=message)
+        if response["ok"]:
+            print("Slack 메시지가 성공적으로 전송되었습니다.")
+        else:
+            print("Slack 메시지 전송에 실패하였습니다.")
+    except Exception as e:
+        print(f"Slack 메시지 전송 중 오류 발생: {e}")
+
 coin_list = [
     {"ticker": "BTC", "name": "비트코인"},
     {"ticker": "BSV", "name": "비트코인 에스브이"},
@@ -53,6 +81,9 @@ def get_current_price(ticker):
 upbit = pyupbit.Upbit(access, secret)
 print("autotrade start")
 
+# 매수 기록을 저장할 리스트
+buy_history = []
+
 # 자동매매 시작
 while True:
     try:
@@ -74,10 +105,18 @@ while True:
                     if target_price < current_price and ma15 < current_price:
                         krw = get_balance("KRW")
                         if krw > 5000:
-                            upbit.buy_market_order(ticker, krw*0.9995)
+                            buy_amount = krw * 0.9995
+                            upbit.buy_market_order(ticker, buy_amount)
+                            # 매수한 내역 저장
+                            buy_history.append({"coin": coin['name'], "amount": buy_amount})
+                            print(f"매수: {coin['name']} {buy_amount} 원")
                 else:
                     if ma15 > current_price:
-                        upbit.sell_market_order(ticker, balance*0.9995)
+                        sell_amount = balance * 0.9995
+                        upbit.sell_market_order(ticker, sell_amount)
+                        print(f"매도: {coin['name']} 매도가: {current_price}, 목표가: {target_price}, 평균가: {avg_buy_price}")
+                        message = f"매도: {coin['name']} 매도가: {current_price}, 목표가: {target_price}, 평균가: {avg_buy_price}"
+                        send_slack_message(message)
         if len(holding_coins) == 0:
             for coin in coin_list:
                 ticker = f"KRW-{coin['ticker']}"
@@ -92,6 +131,10 @@ while True:
                         krw = get_balance("KRW")
                         if krw > 5000:
                             upbit.buy_market_order(ticker, krw*0.9995)
+                            print(f"매수: {coin['name']} 매수가: {current_price}, 목표가: {target_price}, 평균가: {avg_buy_price}")
+                            message = f"매수: {coin['name']} 매수가: {current_price}, 목표가: {target_price}, 평균가: {avg_buy_price}"
+                            send_slack_message(message)
+                            
         time.sleep(1)
     except Exception as e:
         print(e)
