@@ -89,6 +89,13 @@ print("autotrade start")
 # 매수 기록을 저장할 리스트
 buy_history = []
 
+def format_price(price):
+    """가격을 포맷팅하는 함수"""
+    if price >= 1:
+        return format(price, ",")
+    else:
+        return format(price, ".6f")
+    
 # 자동매매 시작
 while True:
     try:
@@ -106,7 +113,7 @@ while True:
                     target_price = get_target_price(ticker, 0.5)
                     ma15 = get_ma15(ticker)
                     current_price = get_current_price(ticker)
-                    print(f"{coin['name']} 보유량: {balance:,.6f}, 평균매수가: {avg_buy_price:,.6f}, 현재가: {current_price:,.6f}, 목표가: {target_price:,.6f}, 15일 이동평균가: {ma15:,.6f}")
+                    print(f"{coin['name']} 보유량: {format_price(balance)}, 평균매수가: {format_price(avg_buy_price)}, 현재가: {format_price(current_price)}, 목표가: {format_price(target_price)}, 평균가: {format_price(ma15)}")
                     if target_price < current_price and ma15 < current_price:
                         krw = get_balance("KRW")
                         if krw > 5000:
@@ -114,14 +121,15 @@ while True:
                             upbit.buy_market_order(ticker, buy_amount)
                             # 매수한 내역 저장
                             buy_history.append({"coin": coin['name'], "amount": buy_amount})
-                            print(f"매수: {coin['name']} {buy_amount:,.6f} 원")
+                            print(f"매수: {coin['name']} 매수가: {format_price(current_price)}, 목표가: {format_price(target_price)}, 평균가: {format_price(avg_buy_price)}")
+
                 else:
                     if ma15 > current_price:
                         loss_rate = (current_price - avg_buy_price) / avg_buy_price
                         if loss_rate < -0.03:
                             sell_amount = balance * 0.9995
                             upbit.sell_market_order(ticker, sell_amount)
-                            print(f"매도: {coin['name']} 매도가: {current_price:,.6f}, 손실률: {loss_rate}")
+                            print(f"매도: {coin['name']} 매도가: {format_price(current_price)}, 손실률: {format(loss_rate, '.6f')}")
         if len(holding_coins) == 0:
             for coin in coin_list:
                 ticker = f"KRW-{coin['ticker']}"
@@ -131,12 +139,12 @@ while True:
                     target_price = get_target_price(ticker, 0.5)
                     ma15 = get_ma15(ticker)
                     current_price = get_current_price(ticker)
-                    print(f"{coin['name']} 현재가: {current_price:,.6f}, 목표가: {target_price:,.6f}, 15일 이동평균가: {ma15:,.6f}")
+                    print(f"{coin['name']} 현재가: {format_price(current_price)}, 목표가: {format_price(target_price)}, 평균가: {format_price(ma15)}")
                     if target_price < current_price and ma15 < current_price:
                         krw = get_balance("KRW")
                         if krw > 5000:
                             upbit.buy_market_order(ticker, krw*0.9995)
-                            print(f"매수: {coin['name']} 매수가: {current_price:,.6f}, 목표가: {target_price:,.6f}, 평균가: {avg_buy_price:,.6f}")
+                            print(f"매수: {coin['name']} 매수가: {format_price(current_price)}, 목표가: {format_price(target_price)}, 평균가: {format_price(avg_buy_price)}")
         time.sleep(1)
     except Exception as e:
         print(e)
