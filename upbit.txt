@@ -1,0 +1,8 @@
+UPBIT
+access = KEY
+secret = KEY
+
+slack
+slack = KEY
+
+coin_list = BTC - 비트코인, BSV - 비트코인 에스브이, ETH - 이더리움, BCH - 비트코인 캐시, BSV - 비트코인 에스브이, ETH - 이더리움, ETC - 이더리움클래식, BTT - 비트토렌트, SOL - 솔라나, XLM - 스텔라루멘, XRP - 리플, LINK - 체인링크, LOOM - 룸네트워크, EOS - 이오스, ADA - 에이다, DOT - 폴카닷, DOGE - 도지코인
