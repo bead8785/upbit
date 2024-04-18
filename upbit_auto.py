@@ -6,24 +6,37 @@ import slack_sdk
 import os
 
 # UPBIT OPEN API_KEY 파일에서 access와 secret 불러오기
-with open("upbit.txt", "r") as f:
+with open("upbit.txt", "r", encoding="utf-8") as f:
     lines = f.readlines()
-    access = lines[0].strip()
-    secret = lines[1].strip()
+    access = ""
+    secret = ""
+    for line in lines:
+        if "access" in line:
+            access = line.split("=")[1].strip()
+        elif "secret" in line:
+            secret = line.split("=")[1].strip()
 
 # Slack API 토큰 불러오기
-with open("slack.txt", "r") as f:
-    slack_token = f.readline().strip()
+slack_token = ""
+with open("upbit.txt", "r", encoding="utf-8") as f:
+    lines = f.readlines()
+    for line in lines:
+        if "slack_token" in line:
+            slack_token = line.split("=")[1].strip()
 
 # 코인 리스트 불러오기
 coin_list = []
-with open("upbit_coins.txt", "r") as f:
-    for line in f:
-        ticker, name = line.strip().split(" - ")
-        coin_list.append({"ticker": ticker, "name": name})
+with open("upbit.txt", "r", encoding="utf-8") as f:
+    lines = f.readlines()
+    for line in lines:
+        if "coin_list" in line:
+            coins = line.split("=")[1].strip().split(",")
+            for coin in coins:
+                ticker, name = coin.split("-")
+                coin_list.append({"ticker": ticker.strip(), "name": name.strip()})
 
 # Slack 클라이언트 초기화
-slack_client = slack_sdk.WebClient(token=slack_token)
+slack_client = WebClient(token=slack_token)
 
 def send_slack_message(message):
     try:
