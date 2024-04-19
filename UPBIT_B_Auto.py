@@ -20,7 +20,7 @@ def read_keys_from_file(filename):
     return access_key, secret_key, coin_dict, coin_list
 
 # access key와 secret key를 파일에서 읽어옴
-access, secret, coin_dict, coin_list = read_keys_from_file("upbit.txt")
+access, secret, coin_dict, coin_list = read_keys_from_file("UPBIT_B_Auto.txt")
 print(f"거래되는 코인{coin_list}")
 
 # 로그인
