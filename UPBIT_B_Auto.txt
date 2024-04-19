@@ -1,0 +1,9 @@
+# UPBIT OPEN_API_KEY #
+access =your-access
+secret = your-secret
+
+# 코인 리스트
+ONT=온톨로지
+GAS=가스
+SOL=솔라나
+BTC=비트코인
